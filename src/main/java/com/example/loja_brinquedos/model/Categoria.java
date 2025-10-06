@@ -77,9 +77,4 @@ public class Categoria {
         this.brinquedos = brinquedos;
     }
 
-    //Metodo para obter a quantidade de produtos na categoria
-    public int getQuantidadeProdutos() {
-        return brinquedos.size();
-    }
-
 }
