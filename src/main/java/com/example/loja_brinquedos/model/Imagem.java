@@ -17,7 +17,7 @@ public class Imagem {
     @JoinColumn(name = "brinquedo_id", nullable = false)
     private Brinquedo brinquedo;
 
-    // Construtores
+    //Construtores
     public Imagem() {}
 
     public Imagem(String caminho, Brinquedo brinquedo) {
@@ -25,7 +25,7 @@ public class Imagem {
         this.brinquedo = brinquedo;
     }
 
-    // Getters e Setters
+    //Getters e Setters
     public Long getId() {
         return id;
     }
