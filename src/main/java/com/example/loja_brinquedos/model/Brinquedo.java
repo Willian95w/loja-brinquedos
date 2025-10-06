@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "brinquedos")
@@ -54,7 +55,7 @@ public class Brinquedo {
     private Set<Categoria> categorias = new HashSet<>();
 
     @NotEmpty
-    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "brinquedo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Imagem> imagens = new ArrayList<>();
 
     @Column(nullable = false)
