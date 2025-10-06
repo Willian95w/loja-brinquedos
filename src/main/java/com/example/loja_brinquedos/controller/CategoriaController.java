@@ -34,4 +34,5 @@ public class CategoriaController {
                 .map(categoriaService::getQuantidadeProdutos)
                 .orElse(0);
     }
+
 }

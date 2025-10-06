@@ -70,4 +70,5 @@ public class BrinquedoController {
         brinquedoService.incrementViews(id);
         return ResponseEntity.ok().build();
     }
+
 }
