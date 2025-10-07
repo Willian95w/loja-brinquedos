@@ -1,5 +1,6 @@
 package com.example.loja_brinquedos.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,6 +30,7 @@ public class Categoria {
     private String imagem;
 
     @ManyToMany(mappedBy = "categorias")
+    @JsonBackReference
     private Set<Brinquedo> brinquedos = new HashSet<>();
 
     //Construtores
