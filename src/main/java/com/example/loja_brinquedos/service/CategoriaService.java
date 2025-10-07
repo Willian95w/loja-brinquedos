@@ -23,14 +23,6 @@ public class CategoriaService {
         return categoriaRepository.findByNomeContainingIgnoreCase(nome);
     }
 
-    public Categoria save(Categoria categoria) {
-        return categoriaRepository.save(categoria);
-    }
-
-    public void delete(Long id) {
-        categoriaRepository.deleteById(id);
-    }
-
     public int getQuantidadeProdutos(Categoria categoria) {
         return categoria.getBrinquedos().size();
     }
