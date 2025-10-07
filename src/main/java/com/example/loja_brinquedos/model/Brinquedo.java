@@ -22,7 +22,6 @@ public class Brinquedo {
     @Column(unique = true, nullable = false)
     private String codigo;
 
-    @NotNull
     @NotBlank
     @Column(nullable = false)
     private String nome;
@@ -31,17 +30,14 @@ public class Brinquedo {
     @Column(nullable = false)
     private BigDecimal valor;
 
-    @NotNull
     @NotBlank
     @Column(nullable = false)
     private String marca;
 
-    @NotNull
     @NotBlank
     @Column(columnDefinition = "TEXT", nullable = false)
     private String descricao;
 
-    @NotNull
     @NotBlank
     @Column(columnDefinition = "TEXT", nullable = false)
     private String detalhes;
