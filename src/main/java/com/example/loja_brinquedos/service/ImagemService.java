@@ -4,7 +4,6 @@ import com.example.loja_brinquedos.model.Brinquedo;
 import com.example.loja_brinquedos.model.Imagem;
 import com.example.loja_brinquedos.repository.BrinquedoRepository;
 import com.example.loja_brinquedos.repository.ImagemRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
