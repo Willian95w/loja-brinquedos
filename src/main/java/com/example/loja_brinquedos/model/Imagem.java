@@ -1,5 +1,6 @@
 package com.example.loja_brinquedos.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -17,6 +18,7 @@ public class Imagem {
 
     @ManyToOne
     @JoinColumn(name = "brinquedo_id", nullable = false)
+    @JsonBackReference
     private Brinquedo brinquedo;
 
     //Construtores
