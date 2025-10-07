@@ -1,5 +1,6 @@
 package com.example.loja_brinquedos.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -49,10 +50,12 @@ public class Brinquedo {
             joinColumns = @JoinColumn(name = "produto_id"),
             inverseJoinColumns = @JoinColumn(name = "categoria_id")
     )
+    @JsonManagedReference
     private Set<Categoria> categorias = new HashSet<>();
 
     @NotEmpty
     @OneToMany(mappedBy = "brinquedo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Imagem> imagens = new ArrayList<>();
 
     @Column(nullable = false)
