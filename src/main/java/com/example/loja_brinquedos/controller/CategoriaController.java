@@ -36,14 +36,4 @@ public class CategoriaController {
                 .orElse(0);
     }
 
-    @PostMapping
-    public ResponseEntity<Categoria> createCategoria(@RequestBody Categoria categoria) {
-        Categoria salva = categoriaService.createCategoria(
-                categoria.getNome(),
-                categoria.getDescricao(),
-                categoria.getImagem()
-        );
-        return ResponseEntity.ok(salva);
-    }
-
 }
