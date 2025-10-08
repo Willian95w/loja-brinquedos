@@ -43,6 +43,11 @@ public class BrinquedoController {
         return brinquedoService.findTop8MaisAcessados();
     }
 
+    @GetMapping("/categoria/{id}")
+    public List<Brinquedo> getByCategoriaId(@PathVariable Long id) {
+        return brinquedoService.findByCategoriaId(id);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Brinquedo> getBrinquedoById(@PathVariable Long id) {
         return brinquedoService.findById(id)
@@ -59,7 +64,6 @@ public class BrinquedoController {
 
         return brinquedoService.filtrar(nome, marcas, minValor, maxValor);
     }
-
 
     @PostMapping
     public ResponseEntity<Brinquedo> createBrinquedo(

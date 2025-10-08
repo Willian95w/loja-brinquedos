@@ -25,6 +25,10 @@ public class BrinquedoService {
         return brinquedoRepository.findTop8ByOrderByViewsDesc();
     }
 
+    public List<Brinquedo> findByCategoriaId(Long idCategoria) {
+        return brinquedoRepository.findByCategorias_Id(idCategoria);
+    }
+
     public Optional<Brinquedo> findById(Long id) {
         return brinquedoRepository.findById(id);
     }

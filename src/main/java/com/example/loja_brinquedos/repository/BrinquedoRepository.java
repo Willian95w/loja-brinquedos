@@ -12,8 +12,6 @@ import java.util.List;
 @Repository
 public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
 
-    List<Brinquedo> findByMarcaInAndValorBetween(List<String> marcas, BigDecimal min, BigDecimal max);
-
     @Query("SELECT b FROM Brinquedo b WHERE (:nome IS NULL OR LOWER(b.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) " +
             "AND (:marcas IS NULL OR b.marca IN :marcas) " +
             "AND (:minValor IS NULL OR b.valor >= :minValor) " +
@@ -25,4 +23,7 @@ public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
             @Param("maxValor") BigDecimal maxValor);
 
     List<Brinquedo> findTop8ByOrderByViewsDesc();
+
+    List<Brinquedo> findByCategorias_Id(Long id);
+
 }
