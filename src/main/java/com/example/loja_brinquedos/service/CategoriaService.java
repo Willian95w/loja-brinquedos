@@ -27,4 +27,13 @@ public class CategoriaService {
         return categoria.getBrinquedos().size();
     }
 
+    public Categoria createCategoria(String nome, String descricao, String imagem) {
+        Categoria categoria = new Categoria();
+        categoria.setNome(nome);
+        categoria.setDescricao(descricao);
+        categoria.setImagem(imagem);
+
+        return categoriaRepository.save(categoria);
+    }
+
 }

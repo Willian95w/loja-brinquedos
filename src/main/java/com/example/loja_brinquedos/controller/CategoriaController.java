@@ -2,6 +2,7 @@ package com.example.loja_brinquedos.controller;
 
 import com.example.loja_brinquedos.model.Categoria;
 import com.example.loja_brinquedos.service.CategoriaService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +34,16 @@ public class CategoriaController {
                 .findFirst()
                 .map(categoriaService::getQuantidadeProdutos)
                 .orElse(0);
+    }
+
+    @PostMapping("/categorias")
+    public ResponseEntity<Categoria> createCategoria(@RequestBody Categoria categoria) {
+        Categoria salva = categoriaService.createCategoria(
+                categoria.getNome(),
+                categoria.getDescricao(),
+                categoria.getImagem()
+        );
+        return ResponseEntity.ok(salva);
     }
 
 }
