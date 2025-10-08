@@ -1,5 +1,5 @@
-# Base image com JDK 17
-FROM openjdk:17-jdk-slim
+# Base image com JDK 21
+FROM openjdk:21-jdk-slim
 
 # Instala Maven
 RUN apt-get update && apt-get install -y maven git && rm -rf /var/lib/apt/lists/*
