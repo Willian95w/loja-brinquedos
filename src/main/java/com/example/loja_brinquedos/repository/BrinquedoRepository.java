@@ -12,18 +12,26 @@ import java.util.List;
 @Repository
 public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
 
-    @Query("SELECT b FROM Brinquedo b WHERE (:nome IS NULL OR LOWER(b.nome) LIKE LOWER(CONCAT('%', :nome, '%'))) " +
-            "AND (:marcas IS NULL OR b.marca IN :marcas) " +
-            "AND (:minValor IS NULL OR b.valor >= :minValor) " +
-            "AND (:maxValor IS NULL OR b.valor <= :maxValor)")
-    List<Brinquedo> filtrar(
-            @Param("nome") String nome,
-            @Param("marcas") List<String> marcas,
-            @Param("minValor") BigDecimal minValor,
-            @Param("maxValor") BigDecimal maxValor);
-
     List<Brinquedo> findTop8ByOrderByViewsDesc();
 
     List<Brinquedo> findByCategorias_Id(Long id);
+
+    @Query("""
+        SELECT b 
+        FROM Brinquedo b
+        JOIN b.categorias c
+        WHERE c.id = :categoriaId
+          AND (:nome IS NULL OR LOWER(b.nome) LIKE LOWER(CONCAT('%', :nome, '%')))
+          AND (:marcas IS NULL OR b.marca IN :marcas)
+          AND (:minValor IS NULL OR b.valor >= :minValor)
+          AND (:maxValor IS NULL OR b.valor <= :maxValor)
+    """)
+    List<Brinquedo> filtrarPorCategoria(
+            @Param("categoriaId") Long categoriaId,
+            @Param("nome") String nome,
+            @Param("marcas") List<String> marcas,
+            @Param("minValor") BigDecimal minValor,
+            @Param("maxValor") BigDecimal maxValor
+    );
 
 }

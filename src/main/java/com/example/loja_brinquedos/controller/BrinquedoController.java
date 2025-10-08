@@ -44,8 +44,14 @@ public class BrinquedoController {
     }
 
     @GetMapping("/categoria/{id}")
-    public List<Brinquedo> getByCategoriaId(@PathVariable Long id) {
-        return brinquedoService.findByCategoriaId(id);
+    public List<Brinquedo> getByCategoriaIdAndFiltros(
+            @PathVariable Long id,
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) List<String> marcas,
+            @RequestParam(required = false) BigDecimal minValor,
+            @RequestParam(required = false) BigDecimal maxValor) {
+
+        return brinquedoService.filtrarPorCategoria(id, nome, marcas, minValor, maxValor);
     }
 
     @GetMapping("/{id}")
@@ -53,16 +59,6 @@ public class BrinquedoController {
         return brinquedoService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/search")
-    public List<Brinquedo> searchBrinquedos(
-            @RequestParam(required = false) String nome,
-            @RequestParam(required = false) List<String> marcas,
-            @RequestParam(required = false) BigDecimal minValor,
-            @RequestParam(required = false) BigDecimal maxValor) {
-
-        return brinquedoService.filtrar(nome, marcas, minValor, maxValor);
     }
 
     @PostMapping

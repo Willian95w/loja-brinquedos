@@ -33,12 +33,14 @@ public class BrinquedoService {
         return brinquedoRepository.findById(id);
     }
 
-    public List<Brinquedo> filtrar(String nome, List<String> marcas, BigDecimal minValor, BigDecimal maxValor) {
-        // se a lista de marcas estiver vazia, passamos null para o repository
+    public List<Brinquedo> filtrarPorCategoria(Long categoriaId, String nome, List<String> marcas,
+                                               BigDecimal minValor, BigDecimal maxValor) {
+        // se a lista de marcas estiver vazia, passamos null
         if (marcas != null && marcas.isEmpty()) {
             marcas = null;
         }
-        return brinquedoRepository.filtrar(nome, marcas, minValor, maxValor);
+
+        return brinquedoRepository.filtrarPorCategoria(categoriaId, nome, marcas, minValor, maxValor);
     }
 
     public Brinquedo save(Brinquedo brinquedo) {
