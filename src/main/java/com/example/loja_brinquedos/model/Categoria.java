@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "categorias")
@@ -35,17 +37,7 @@ public class Categoria {
 
     @ManyToMany(mappedBy = "categorias")
     @JsonBackReference
+    @Builder.Default
     private Set<Brinquedo> brinquedos = new HashSet<>();
-
-    //Construtores
-    public Categoria() {
-    }
-
-    public Categoria(String nome, String descricao, String imagem) {
-        this.nome = nome;
-        this.descricao = descricao;
-        this.imagem = imagem;
-        this.brinquedos = new HashSet<>();
-    }
 
 }

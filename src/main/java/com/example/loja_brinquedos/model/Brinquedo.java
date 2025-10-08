@@ -60,30 +60,17 @@ public class Brinquedo {
             inverseJoinColumns = @JoinColumn(name = "categoria_id")
     )
     @JsonManagedReference
+    @Builder.Default
     private Set<Categoria> categorias = new HashSet<>();
 
     @NotEmpty
     @OneToMany(mappedBy = "brinquedo", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @Builder.Default
     private List<Imagem> imagens = new ArrayList<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private Long views = 0L;
-
-    //Construtores
-    public Brinquedo() {
-    }
-
-    public Brinquedo(String codigo, String nome, BigDecimal valor, String marca, String descricao, String detalhes) {
-        this.codigo = codigo;
-        this.nome = nome;
-        this.valor = valor;
-        this.marca = marca;
-        this.descricao = descricao;
-        this.detalhes = detalhes;
-        this.categorias = new HashSet<>();
-        this.imagens = new ArrayList<>();
-        this.views = 0L;
-    }
 
 }
