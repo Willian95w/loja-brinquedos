@@ -4,6 +4,7 @@ import com.example.loja_brinquedos.model.Brinquedo;
 import com.example.loja_brinquedos.repository.BrinquedoRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +25,12 @@ public class BrinquedoService {
         return brinquedoRepository.findById(id);
     }
 
-    public List<Brinquedo> findByNome(String nome) {
-        return brinquedoRepository.findByNomeContainingIgnoreCase(nome);
+    public List<Brinquedo> filtrar(String nome, List<String> marcas, BigDecimal minValor, BigDecimal maxValor) {
+        // se a lista de marcas estiver vazia, passamos null para o repository
+        if (marcas != null && marcas.isEmpty()) {
+            marcas = null;
+        }
+        return brinquedoRepository.filtrar(nome, marcas, minValor, maxValor);
     }
 
     public Brinquedo save(Brinquedo brinquedo) {
