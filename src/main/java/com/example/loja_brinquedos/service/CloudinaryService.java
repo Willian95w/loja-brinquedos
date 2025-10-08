@@ -23,7 +23,6 @@ public class CloudinaryService {
         return cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
     }
 
-
     public void deleteFile(String publicId) throws Exception {
         cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
     }
