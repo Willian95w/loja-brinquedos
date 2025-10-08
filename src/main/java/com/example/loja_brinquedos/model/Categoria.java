@@ -1,13 +1,21 @@
 package com.example.loja_brinquedos.model;
 
+import lombok.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import lombok.Data;
+
 import java.util.HashSet;
 import java.util.Set;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "categorias")
 public class Categoria {
@@ -16,7 +24,6 @@ public class Categoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @NotBlank
     @Column(nullable = false, unique = true)
     private String nome;
@@ -32,51 +39,5 @@ public class Categoria {
     @ManyToMany(mappedBy = "categorias")
     @JsonBackReference
     private Set<Brinquedo> brinquedos = new HashSet<>();
-
-    //Construtores
-    public Categoria() {}
-
-    public Categoria(String nome, String descricao, String imagem) {
-        this.nome = nome;
-        this.descricao = descricao;
-        this.imagem = imagem;
-    }
-
-    //Getters e Setters
-    public Long getId() {
-        return id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public String getImagem() {
-        return imagem;
-    }
-
-    public void setImagem(String imagem) {
-        this.imagem = imagem;
-    }
-
-    public Set<Brinquedo> getBrinquedos() {
-        return brinquedos;
-    }
-
-    public void setBrinquedos(Set<Brinquedo> brinquedos) {
-        this.brinquedos = brinquedos;
-    }
 
 }
