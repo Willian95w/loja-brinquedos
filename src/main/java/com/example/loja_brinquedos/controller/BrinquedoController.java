@@ -144,11 +144,11 @@ public class BrinquedoController {
         }
         brinquedo.setCategorias(categorias);
 
-        // Remove imagens, se solicitado
+        // Remove imagens, se solicitado, usando Iterator para evitar ConcurrentModificationException
         if (imagensRemover != null && !imagensRemover.isEmpty()) {
-            List<Imagem> imagensParaRemover = new ArrayList<>();
-
-            for (Imagem img : brinquedo.getImagens()) {
+            Iterator<Imagem> iterator = brinquedo.getImagens().iterator();
+            while (iterator.hasNext()) {
+                Imagem img = iterator.next();
                 if (imagensRemover.contains(img.getId())) {
                     // Exclui do Cloudinary se tiver publicId
                     if (img.getPublicId() != null) {
@@ -158,13 +158,12 @@ public class BrinquedoController {
                             System.err.println("Erro ao deletar do Cloudinary: " + e.getMessage());
                         }
                     }
-                    imagensParaRemover.add(img);
+                    // Remove da coleção de forma segura
+                    iterator.remove();
+                    // Remove do banco
+                    imagemRepository.delete(img);
                 }
             }
-
-            // Remove do banco
-            brinquedo.getImagens().removeAll(imagensParaRemover);
-            imagemRepository.deleteAll(imagensParaRemover);
         }
 
         // Adiciona novas imagens
@@ -184,6 +183,7 @@ public class BrinquedoController {
             }
         }
 
+        // Salva brinquedo atualizado
         Brinquedo salvo = brinquedoService.save(brinquedo);
         return ResponseEntity.ok(salvo);
     }
