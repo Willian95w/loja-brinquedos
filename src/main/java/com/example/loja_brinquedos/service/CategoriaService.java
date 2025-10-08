@@ -18,7 +18,7 @@ public class CategoriaService {
     }
 
     public List<Categoria> findAll() {
-        List<Categoria> categorias = categoriaRepository.findAll();
+        List<Categoria> categorias = categoriaRepository.findAllByOrderByNomeAsc();
 
         categorias.forEach(c -> {
             if (c.getImagem() != null) {
@@ -35,7 +35,7 @@ public class CategoriaService {
     }
 
     public List<Categoria> findByNome(String nome) {
-        List<Categoria> categorias = categoriaRepository.findByNomeContainingIgnoreCase(nome);
+        List<Categoria> categorias = categoriaRepository.findByNomeContainingIgnoreCaseOrderByNomeAsc(nome);
 
         categorias.forEach(c -> {
             if (c.getImagem() != null) {

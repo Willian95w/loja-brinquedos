@@ -27,13 +27,4 @@ public class CategoriaController {
         return categoriaService.findByNome(nome);
     }
 
-    @GetMapping("/{id}/quantidade-produtos")
-    public int getQuantidadeProdutos(@PathVariable Long id) {
-        return categoriaService.findAll().stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .map(categoriaService::getQuantidadeProdutos)
-                .orElse(0);
-    }
-
 }
