@@ -9,6 +9,4 @@ import java.util.List;
 @Repository
 public interface ImagemRepository extends JpaRepository<Imagem,Long> {
 
-    List<Imagem> findByBrinquedoId(Long brinquedoId);
-
 }
