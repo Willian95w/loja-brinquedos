@@ -11,11 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @RestController
@@ -50,9 +46,15 @@ public class BrinquedoController {
     }
 
     @GetMapping("/search")
-    public List<Brinquedo> searchBrinquedos(@RequestParam String nome) {
-        return brinquedoService.findByNome(nome);
+    public List<Brinquedo> searchBrinquedos(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) List<String> marcas,
+            @RequestParam(required = false) BigDecimal minValor,
+            @RequestParam(required = false) BigDecimal maxValor) {
+
+        return brinquedoService.filtrar(nome, marcas, minValor, maxValor);
     }
+
 
     @PostMapping
     public ResponseEntity<Brinquedo> createBrinquedo(
