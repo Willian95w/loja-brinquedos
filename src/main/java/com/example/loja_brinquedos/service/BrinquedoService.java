@@ -17,6 +17,10 @@ public class BrinquedoService {
         this.brinquedoRepository = brinquedoRepository;
     }
 
+    public List<Brinquedo> findAll() {
+        return brinquedoRepository.findAll();
+    }
+
     public List<Brinquedo> findTop8MaisAcessados() {
         return brinquedoRepository.findTop8ByOrderByViewsDesc();
     }
