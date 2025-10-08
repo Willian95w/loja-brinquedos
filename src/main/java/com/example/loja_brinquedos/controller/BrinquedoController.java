@@ -52,6 +52,10 @@ public class BrinquedoController {
             @RequestParam(required = false) BigDecimal minValor,
             @RequestParam(required = false) BigDecimal maxValor) {
 
+        if (nome != null && nome.isBlank()) {
+            nome = null;
+        }
+
         return brinquedoService.filtrar(nome, marcas, minValor, maxValor);
     }
 
