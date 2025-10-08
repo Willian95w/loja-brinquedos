@@ -33,6 +33,9 @@ public class Categoria {
     @JsonBackReference
     private Set<Brinquedo> brinquedos = new HashSet<>();
 
+    @Transient
+    private int quantidadeBrinquedos;
+
     //Construtores
     public Categoria() {}
 
@@ -79,4 +82,11 @@ public class Categoria {
         this.brinquedos = brinquedos;
     }
 
+    public int getQuantidadeBrinquedos() {
+        return quantidadeBrinquedos;
+    }
+
+    public void setQuantidadeBrinquedos(int quantidadeBrinquedos) {
+        this.quantidadeBrinquedos = quantidadeBrinquedos;
+    }
 }

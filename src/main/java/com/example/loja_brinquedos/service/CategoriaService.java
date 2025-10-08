@@ -24,6 +24,11 @@ public class CategoriaService {
             if (c.getImagem() != null) {
                 c.setImagem(baseUrl + c.getImagem());
             }
+            if (c.getBrinquedos() != null) {
+                c.setQuantidadeBrinquedos(c.getBrinquedos().size());
+            } else {
+                c.setQuantidadeBrinquedos(0);
+            }
         });
 
         return categorias;
@@ -32,18 +37,18 @@ public class CategoriaService {
     public List<Categoria> findByNome(String nome) {
         List<Categoria> categorias = categoriaRepository.findByNomeContainingIgnoreCase(nome);
 
-        String baseUrl = "https://loja-brinquedos.onrender.com";
         categorias.forEach(c -> {
             if (c.getImagem() != null) {
                 c.setImagem(baseUrl + c.getImagem());
             }
+            if (c.getBrinquedos() != null) {
+                c.setQuantidadeBrinquedos(c.getBrinquedos().size());
+            } else {
+                c.setQuantidadeBrinquedos(0);
+            }
         });
 
         return categorias;
-    }
-
-    public int getQuantidadeProdutos(Categoria categoria) {
-        return categoria.getBrinquedos().size();
     }
 
 }
