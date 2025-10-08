@@ -85,14 +85,10 @@ public class BrinquedoController {
         List<Imagem> imagens = new ArrayList<>();
         for (MultipartFile arquivo : arquivos) {
             if (!arquivo.isEmpty()) {
-                // Faz upload pro Cloudinary (retorna o Map com dados da imagem)
                 Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
-
-                // Extrai URL e public_id
                 String imageUrl = (String) uploadResult.get("secure_url");
                 String publicId = (String) uploadResult.get("public_id");
 
-                // Cria a entidade Imagem
                 Imagem imagem = new Imagem();
                 imagem.setCaminho(imageUrl);
                 imagem.setPublicId(publicId);
