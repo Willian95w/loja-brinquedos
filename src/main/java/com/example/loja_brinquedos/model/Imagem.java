@@ -21,6 +21,10 @@ public class Imagem {
     @JsonBackReference
     private Brinquedo brinquedo;
 
+    @NotBlank
+    @Column(name = "public_id", nullable = false)
+    private String publicId;
+
     //Construtores
     public Imagem() {}
 
@@ -48,6 +52,14 @@ public class Imagem {
 
     public void setBrinquedo(Brinquedo brinquedo) {
         this.brinquedo = brinquedo;
+    }
+
+    public String getPublicId() {
+        return publicId;
+    }
+
+    public void setPublicId(String publicId) {
+        this.publicId = publicId;
     }
 
 }
