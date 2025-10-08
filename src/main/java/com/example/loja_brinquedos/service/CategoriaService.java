@@ -11,16 +11,35 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
+    private final String baseUrl = "https://loja-brinquedos.onrender.com";
+
     public CategoriaService(CategoriaRepository categoriaRepository) {
         this.categoriaRepository = categoriaRepository;
     }
 
     public List<Categoria> findAll() {
-        return categoriaRepository.findAll();
+        List<Categoria> categorias = categoriaRepository.findAll();
+
+        categorias.forEach(c -> {
+            if (c.getImagem() != null) {
+                c.setImagem(baseUrl + c.getImagem());
+            }
+        });
+
+        return categorias;
     }
 
     public List<Categoria> findByNome(String nome) {
-        return categoriaRepository.findByNomeContainingIgnoreCase(nome);
+        List<Categoria> categorias = categoriaRepository.findByNomeContainingIgnoreCase(nome);
+
+        String baseUrl = "https://loja-brinquedos.onrender.com";
+        categorias.forEach(c -> {
+            if (c.getImagem() != null) {
+                c.setImagem(baseUrl + c.getImagem());
+            }
+        });
+
+        return categorias;
     }
 
     public int getQuantidadeProdutos(Categoria categoria) {
