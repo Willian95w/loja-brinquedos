@@ -27,8 +27,6 @@ public class BrinquedoController {
     private final ImagemRepository imagemRepository;
     private final CloudinaryService cloudinaryService;
 
-    private static final String upload_dir = "src/main/resources/static/uploads/";
-
     public BrinquedoController(BrinquedoService brinquedoService,
                              CategoriaRepository categoriaRepository,
                              ImagemRepository imagemRepository,
@@ -67,6 +65,7 @@ public class BrinquedoController {
             @RequestParam List<Long> categoriaIds,
             @RequestParam("imagens") List<MultipartFile> arquivos) throws Exception {
 
+        // Cria o brinquedo
         Brinquedo brinquedo = new Brinquedo();
         brinquedo.setCodigo(codigo);
         brinquedo.setNome(nome);
@@ -82,17 +81,27 @@ public class BrinquedoController {
         }
         brinquedo.setCategorias(categorias);
 
-        // Associa imagens usando Cloudinary
+        // Faz upload das imagens para o Cloudinary
         List<Imagem> imagens = new ArrayList<>();
         for (MultipartFile arquivo : arquivos) {
             if (!arquivo.isEmpty()) {
-                String url = cloudinaryService.uploadFile(arquivo);
+                // Faz upload pro Cloudinary (retorna o Map com dados da imagem)
+                Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+
+                // Extrai URL e public_id
+                String imageUrl = (String) uploadResult.get("secure_url");
+                String publicId = (String) uploadResult.get("public_id");
+
+                // Cria a entidade Imagem
                 Imagem imagem = new Imagem();
-                imagem.setCaminho(url);
+                imagem.setCaminho(imageUrl);
+                imagem.setPublicId(publicId);
                 imagem.setBrinquedo(brinquedo);
+
                 imagens.add(imagem);
             }
         }
+
         brinquedo.setImagens(imagens);
 
         Brinquedo salvo = brinquedoService.save(brinquedo);
@@ -120,7 +129,7 @@ public class BrinquedoController {
 
         Brinquedo brinquedo = brinquedoOpt.get();
 
-        // Atualiza campos do brinquedo
+        // Atualiza campos básicos
         brinquedo.setCodigo(codigo);
         brinquedo.setNome(nome);
         brinquedo.setValor(valor);
@@ -135,28 +144,40 @@ public class BrinquedoController {
         }
         brinquedo.setCategorias(categorias);
 
-        // Remove imagens existentes, se solicitado
-        if (imagensRemover != null) {
-            brinquedo.getImagens().removeIf(img -> {
+        // Remove imagens, se solicitado
+        if (imagensRemover != null && !imagensRemover.isEmpty()) {
+            List<Imagem> imagensParaRemover = new ArrayList<>();
+
+            for (Imagem img : brinquedo.getImagens()) {
                 if (imagensRemover.contains(img.getId())) {
-                    // Remove do banco
-                    imagemRepository.delete(img);
-                    // Se quiser, pode deletar também do Cloudinary usando a API
-                    return true;
+                    // Exclui do Cloudinary se tiver publicId
+                    if (img.getPublicId() != null) {
+                        try {
+                            cloudinaryService.deleteFile(img.getPublicId());
+                        } catch (Exception e) {
+                            System.err.println("Erro ao deletar do Cloudinary: " + e.getMessage());
+                        }
+                    }
+                    imagensParaRemover.add(img);
                 }
-                return false;
-            });
+            }
+
+            // Remove do banco
+            brinquedo.getImagens().removeAll(imagensParaRemover);
+            imagemRepository.deleteAll(imagensParaRemover);
         }
 
-        // Adiciona novas imagens via Cloudinary
-        if (novasImagens != null) {
+        // Adiciona novas imagens
+        if (novasImagens != null && !novasImagens.isEmpty()) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
-                    // Faz upload para Cloudinary
-                    String url = cloudinaryService.uploadFile(arquivo);
+                    Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+                    String imageUrl = (String) uploadResult.get("secure_url");
+                    String publicId = (String) uploadResult.get("public_id");
 
                     Imagem imagem = new Imagem();
-                    imagem.setCaminho(url);
+                    imagem.setCaminho(imageUrl);
+                    imagem.setPublicId(publicId);
                     imagem.setBrinquedo(brinquedo);
                     brinquedo.getImagens().add(imagem);
                 }
@@ -166,7 +187,6 @@ public class BrinquedoController {
         Brinquedo salvo = brinquedoService.save(brinquedo);
         return ResponseEntity.ok(salvo);
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBrinquedo(@PathVariable Long id) {
