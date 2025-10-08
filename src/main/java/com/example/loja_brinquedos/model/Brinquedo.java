@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
@@ -71,9 +70,20 @@ public class Brinquedo {
     @Column(nullable = false)
     private Long views = 0L;
 
+    //Construtores
     public Brinquedo() {
-        this.imagens = new ArrayList<>();
+    }
+
+    public Brinquedo(String codigo, String nome, BigDecimal valor, String marca, String descricao, String detalhes) {
+        this.codigo = codigo;
+        this.nome = nome;
+        this.valor = valor;
+        this.marca = marca;
+        this.descricao = descricao;
+        this.detalhes = detalhes;
         this.categorias = new HashSet<>();
+        this.imagens = new ArrayList<>();
+        this.views = 0L;
     }
 
 }

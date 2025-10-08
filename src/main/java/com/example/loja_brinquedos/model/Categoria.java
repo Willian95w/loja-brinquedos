@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import lombok.Data;
 
@@ -13,8 +12,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "categorias")
@@ -40,7 +37,14 @@ public class Categoria {
     @JsonBackReference
     private Set<Brinquedo> brinquedos = new HashSet<>();
 
+    //Construtores
     public Categoria() {
+    }
+
+    public Categoria(String nome, String descricao, String imagem) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.imagem = imagem;
         this.brinquedos = new HashSet<>();
     }
 
