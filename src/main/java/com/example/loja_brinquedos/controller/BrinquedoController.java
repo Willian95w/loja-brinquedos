@@ -6,6 +6,7 @@ import com.example.loja_brinquedos.model.Imagem;
 import com.example.loja_brinquedos.repository.CategoriaRepository;
 import com.example.loja_brinquedos.repository.ImagemRepository;
 import com.example.loja_brinquedos.service.BrinquedoService;
+import com.example.loja_brinquedos.service.CloudinaryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,13 +25,18 @@ public class BrinquedoController {
     private final BrinquedoService brinquedoService;
     private final CategoriaRepository categoriaRepository;
     private final ImagemRepository imagemRepository;
+    private final CloudinaryService cloudinaryService;
 
     private static final String upload_dir = "src/main/resources/static/uploads/";
 
-    public BrinquedoController(BrinquedoService brinquedoService, CategoriaRepository categoriaRepository, ImagemRepository imagemRepository) {
+    public BrinquedoController(BrinquedoService brinquedoService,
+                             CategoriaRepository categoriaRepository,
+                             ImagemRepository imagemRepository,
+                             CloudinaryService cloudinaryService) {
         this.brinquedoService = brinquedoService;
         this.categoriaRepository = categoriaRepository;
         this.imagemRepository = imagemRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @GetMapping
@@ -59,7 +65,7 @@ public class BrinquedoController {
             @RequestParam String descricao,
             @RequestParam String detalhes,
             @RequestParam List<Long> categoriaIds,
-            @RequestParam("imagens") List<MultipartFile> arquivos) throws IOException {
+            @RequestParam("imagens") List<MultipartFile> arquivos) throws Exception {
 
         Brinquedo brinquedo = new Brinquedo();
         brinquedo.setCodigo(codigo);
@@ -76,21 +82,13 @@ public class BrinquedoController {
         }
         brinquedo.setCategorias(categorias);
 
-        // Associa imagens
+        // Associa imagens usando Cloudinary
         List<Imagem> imagens = new ArrayList<>();
-        Path diretorio = Paths.get(upload_dir);
-        if (!Files.exists(diretorio)) {
-            Files.createDirectories(diretorio);
-        }
-
         for (MultipartFile arquivo : arquivos) {
             if (!arquivo.isEmpty()) {
-                String nomeArquivo = System.currentTimeMillis() + "_" + arquivo.getOriginalFilename();
-                Path caminhoArquivo = diretorio.resolve(nomeArquivo);
-                Files.copy(arquivo.getInputStream(), caminhoArquivo);
-
+                String url = cloudinaryService.uploadFile(arquivo);
                 Imagem imagem = new Imagem();
-                imagem.setCaminho("/uploads/" + nomeArquivo);
+                imagem.setCaminho(url);
                 imagem.setBrinquedo(brinquedo);
                 imagens.add(imagem);
             }
@@ -113,7 +111,7 @@ public class BrinquedoController {
             @RequestParam List<Long> categoriaIds,
             @RequestParam(value = "novasImagens", required = false) List<MultipartFile> novasImagens,
             @RequestParam(value = "imagensRemover", required = false) List<Long> imagensRemover
-    ) throws IOException {
+    ) throws Exception {
 
         Optional<Brinquedo> brinquedoOpt = brinquedoService.findById(id);
         if (brinquedoOpt.isEmpty()) {
@@ -143,34 +141,22 @@ public class BrinquedoController {
                 if (imagensRemover.contains(img.getId())) {
                     // Remove do banco
                     imagemRepository.delete(img);
-                    // Remove do disco
-                    try {
-                        Path caminhoArquivo = Paths.get("src/main/resources/static" + img.getCaminho());
-                        Files.deleteIfExists(caminhoArquivo);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    // Se quiser, pode deletar também do Cloudinary usando a API
                     return true;
                 }
                 return false;
             });
         }
 
-        // Adiciona novas imagens
+        // Adiciona novas imagens via Cloudinary
         if (novasImagens != null) {
-            Path diretorio = Paths.get(upload_dir);
-            if (!Files.exists(diretorio)) {
-                Files.createDirectories(diretorio);
-            }
-
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
-                    String nomeArquivo = UUID.randomUUID() + "_" + arquivo.getOriginalFilename();
-                    Path caminhoArquivo = diretorio.resolve(nomeArquivo);
-                    Files.copy(arquivo.getInputStream(), caminhoArquivo);
+                    // Faz upload para Cloudinary
+                    String url = cloudinaryService.uploadFile(arquivo);
 
                     Imagem imagem = new Imagem();
-                    imagem.setCaminho("/uploads/" + nomeArquivo);
+                    imagem.setCaminho(url);
                     imagem.setBrinquedo(brinquedo);
                     brinquedo.getImagens().add(imagem);
                 }
@@ -180,6 +166,7 @@ public class BrinquedoController {
         Brinquedo salvo = brinquedoService.save(brinquedo);
         return ResponseEntity.ok(salvo);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBrinquedo(@PathVariable Long id) {
