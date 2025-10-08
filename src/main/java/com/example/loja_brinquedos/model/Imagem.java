@@ -3,15 +3,7 @@ package com.example.loja_brinquedos.model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "imagens")
 public class Imagem {
@@ -29,8 +21,33 @@ public class Imagem {
     @JsonBackReference
     private Brinquedo brinquedo;
 
-    @NotBlank
-    @Column(name = "public_id", nullable = false)
-    private String publicId;
+    //Construtores
+    public Imagem() {}
+
+    public Imagem(String caminho, Brinquedo brinquedo) {
+        this.caminho = caminho;
+        this.brinquedo = brinquedo;
+    }
+
+    //Getters e Setters
+    public Long getId() {
+        return id;
+    }
+
+    public String getCaminho() {
+        return caminho;
+    }
+
+    public void setCaminho(String caminho) {
+        this.caminho = caminho;
+    }
+
+    public Brinquedo getBrinquedo() {
+        return brinquedo;
+    }
+
+    public void setBrinquedo(Brinquedo brinquedo) {
+        this.brinquedo = brinquedo;
+    }
 
 }
