@@ -36,7 +36,7 @@ public class CategoriaController {
                 .orElse(0);
     }
 
-    @PostMapping("/categorias")
+    @PostMapping
     public ResponseEntity<Categoria> createCategoria(@RequestBody Categoria categoria) {
         Categoria salva = categoriaService.createCategoria(
                 categoria.getNome(),
