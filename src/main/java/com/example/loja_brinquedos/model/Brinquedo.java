@@ -71,4 +71,9 @@ public class Brinquedo {
     @Column(nullable = false)
     private Long views = 0L;
 
+    public Brinquedo() {
+        this.imagens = new ArrayList<>();
+        this.categorias = new HashSet<>();
+    }
+
 }

@@ -40,4 +40,8 @@ public class Categoria {
     @JsonBackReference
     private Set<Brinquedo> brinquedos = new HashSet<>();
 
+    public Categoria() {
+        this.brinquedos = new HashSet<>();
+    }
+
 }
