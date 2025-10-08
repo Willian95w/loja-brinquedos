@@ -24,4 +24,5 @@ public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
             @Param("minValor") BigDecimal minValor,
             @Param("maxValor") BigDecimal maxValor);
 
+    List<Brinquedo> findTop8ByOrderByViewsDesc();
 }

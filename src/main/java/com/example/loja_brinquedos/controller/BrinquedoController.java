@@ -34,8 +34,8 @@ public class BrinquedoController {
     }
 
     @GetMapping
-    public List<Brinquedo> getAllBrinquedos() {
-        return brinquedoService.findAll();
+    public List<Brinquedo> getMaisAcessados() {
+        return brinquedoService.findTop8MaisAcessados();
     }
 
     @GetMapping("/{id}")
