@@ -7,6 +7,7 @@ import com.example.loja_brinquedos.repository.BrinquedoRepository;
 import com.example.loja_brinquedos.repository.CategoriaRepository;
 import com.example.loja_brinquedos.repository.ImagemRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +34,7 @@ public class BrinquedoService {
     }
 
     public List<Brinquedo> findAll() {
-        return brinquedoRepository.findAll();
+        return brinquedoRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
 
     public List<Brinquedo> findTop8MaisAcessados() {

@@ -18,8 +18,6 @@ public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
 
     List<Brinquedo> findByCategorias_Id(Long id);
 
-    List<Brinquedo> findDistinctByCategorias_IdInAndIdNot(Set<Long> categoriaIds, Long excludeId);
-
     @Query("""
         SELECT b 
         FROM Brinquedo b
