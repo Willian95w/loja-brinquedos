@@ -60,6 +60,10 @@ public class BrinquedoController {
         return ResponseEntity.ok(resultado);
     }
 
+    @GetMapping("/marcas")
+    public List<String> getMarcas() {
+        return brinquedoService.findAllMarcas();
+    }
 
     @PostMapping
     public ResponseEntity<Brinquedo> createBrinquedo(

@@ -75,11 +75,21 @@ public class BrinquedoService {
         }).collect(Collectors.toList());
 
         // Monta o retorno
-        Map<String, Object> resposta = new HashMap<>();
+        Map<String, Object> resposta = new LinkedHashMap<>();
         resposta.put("brinquedo", brinquedo);
         resposta.put("relacionados", relacionadosSimplificados);
 
         return resposta;
+    }
+
+    public List<String> findAllMarcas() {
+        return brinquedoRepository.findAll()
+                .stream()
+                .map(Brinquedo::getMarca)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
     }
 
     public Brinquedo save(Brinquedo brinquedo) {
