@@ -111,7 +111,6 @@ public class BrinquedoController {
         return ResponseEntity.noContent().build();
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBrinquedo(@PathVariable Long id) {
         brinquedoService.delete(id);
