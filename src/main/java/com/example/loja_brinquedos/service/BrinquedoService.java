@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 import java.util.*;
 
@@ -108,6 +110,10 @@ public class BrinquedoService {
                                     String descricao, String detalhes, List<Long> categoriaIds,
                                     List<MultipartFile> arquivos) throws Exception {
 
+        if (codigo == null || codigo.isBlank()) {
+            codigo = gerarCodigoUnico();
+        }
+
         // Cria o brinquedo
         Brinquedo brinquedo = new Brinquedo();
         brinquedo.setCodigo(codigo);
@@ -155,8 +161,7 @@ public class BrinquedoService {
                                         String descricao,
                                         String detalhes,
                                         List<Long> categoriaIds,
-                                        List<MultipartFile> novasImagens,
-                                        List<Long> imagensRemover) throws Exception {
+                                        List<MultipartFile> novasImagens) throws Exception {
 
         Brinquedo brinquedo = brinquedoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
@@ -176,24 +181,10 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Remove imagens
-        if (imagensRemover != null && !imagensRemover.isEmpty()) {
-            brinquedo.getImagens().removeIf(img -> {
-                if (imagensRemover.contains(img.getId())) {
-                    if (img.getPublicId() != null) {
-                        try {
-                            cloudinaryService.deleteFile(img.getPublicId());
-                        } catch (Exception e) {
-                            System.err.println("Erro ao deletar do Cloudinary: " + e.getMessage());
-                        }
-                    }
-                    return true; // remove da coleção
-                }
-                return false;
-            });
-        }
+        // Remove todas as imagens antigas
+        removerTodasImagens(brinquedo);
 
-        // Adiciona novas imagens
+        // Adiciona novas imagens (se houver)
         if (novasImagens != null && !novasImagens.isEmpty()) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
@@ -210,8 +201,33 @@ public class BrinquedoService {
             }
         }
 
-        return brinquedo;
+        return brinquedoRepository.save(brinquedo);
     }
+
+    @Transactional
+    public void removerTodasImagens(Brinquedo brinquedo) {
+        List<Imagem> imagens = new ArrayList<>(brinquedo.getImagens());
+
+        for (Imagem img : imagens) {
+            if (img.getPublicId() != null) {
+                try {
+                    cloudinaryService.deleteFile(img.getPublicId());
+                } catch (Exception e) {
+                    System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
+                }
+            }
+        }
+
+        brinquedo.getImagens().clear();
+    }
+
+    private String gerarCodigoUnico() {
+        String prefixo = "BRQ";
+        String data = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        long count = brinquedoRepository.count() + 1; // baseia no número de registros
+        return String.format("%s-%s-%03d", prefixo, data, count);
+    }
+
 
     public Brinquedo save(Brinquedo brinquedo) {
         return brinquedoRepository.save(brinquedo);

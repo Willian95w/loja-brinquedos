@@ -90,14 +90,13 @@ public class BrinquedoController {
             @RequestParam String descricao,
             @RequestParam String detalhes,
             @RequestParam List<Long> categoriaIds,
-            @RequestParam(value = "novasImagens", required = false) List<MultipartFile> novasImagens,
-            @RequestParam(value = "imagensRemover", required = false) List<Long> imagensRemover
+            @RequestParam(value = "novasImagens", required = false) List<MultipartFile> novasImagens
     ) throws Exception {
 
-        Brinquedo atualizado = brinquedoService.atualizarBrinquedo(
-                id, codigo, nome, valor, marca, descricao, detalhes, categoriaIds, novasImagens, imagensRemover
-        );
-        return ResponseEntity.ok(atualizado);
+        Brinquedo salvo = brinquedoService.atualizarBrinquedo(
+                id, codigo, nome, valor, marca, descricao, detalhes, categoriaIds, novasImagens);
+
+        return ResponseEntity.ok(salvo);
     }
 
     @DeleteMapping("/{id}")
