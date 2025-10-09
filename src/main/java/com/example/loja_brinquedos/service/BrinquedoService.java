@@ -181,10 +181,22 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Lista temporária para armazenar imagens antigas
+        // Lista de imagens antigas
         List<Imagem> imagensAntigas = new ArrayList<>(brinquedo.getImagens());
 
-        // Primeiro adiciona novas imagens
+        // Remove imagens antigas do Cloudinary e do Hibernate
+        for (Imagem img : imagensAntigas) {
+            if (img.getPublicId() != null) {
+                try {
+                    cloudinaryService.deleteFile(img.getPublicId());
+                } catch (Exception e) {
+                    System.err.println("Erro ao deletar imagem antiga: " + e.getMessage());
+                }
+            }
+            brinquedo.getImagens().remove(img); // Remove do Hibernate
+        }
+
+        // Adiciona novas imagens
         if (novasImagens != null && !novasImagens.isEmpty()) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
@@ -197,29 +209,15 @@ public class BrinquedoService {
                     novaImagem.setPublicId(publicId);
                     novaImagem.setBrinquedo(brinquedo); // ESSENCIAL
 
-                    // Adiciona à coleção do brinquedo
-                    brinquedo.getImagens().add(novaImagem);
+                    brinquedo.getImagens().add(novaImagem); // Hibernate detecta e faz insert
                 }
             }
         }
 
-        // Depois remove as antigas (para não perder as novas se der erro)
-        for (Imagem img : imagensAntigas) {
-            if (!brinquedo.getImagens().contains(img)) { // Só remove as antigas
-                if (img.getPublicId() != null) {
-                    try {
-                        cloudinaryService.deleteFile(img.getPublicId());
-                    } catch (Exception e) {
-                        System.err.println("Erro ao deletar imagem antiga do Cloudinary: " + e.getMessage());
-                    }
-                }
-                brinquedo.getImagens().remove(img); // Remove do Hibernate
-            }
-        }
-
-        // Persiste o brinquedo com novas imagens
+        // Salva o brinquedo com as novas imagens
         return brinquedoRepository.save(brinquedo);
     }
+
 
 
     private String gerarCodigoUnico() {
