@@ -182,7 +182,11 @@ public class BrinquedoService {
         brinquedo.setCategorias(categorias);
 
         // Remove todas as imagens antigas
-        removerTodasImagens(brinquedo);
+        for (Imagem img : new ArrayList<>(brinquedo.getImagens())) {
+            cloudinaryService.deleteFile(img.getPublicId());
+            brinquedo.getImagens().remove(img);
+            imagemRepository.delete(img);
+        }
 
         // Adiciona novas imagens (se houver)
         if (novasImagens != null && !novasImagens.isEmpty()) {
