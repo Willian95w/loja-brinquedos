@@ -5,6 +5,8 @@ import com.example.loja_brinquedos.model.Categoria;
 import com.example.loja_brinquedos.model.Imagem;
 import com.example.loja_brinquedos.repository.BrinquedoRepository;
 import com.example.loja_brinquedos.repository.CategoriaRepository;
+import com.example.loja_brinquedos.repository.ImagemRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,11 +20,13 @@ public class BrinquedoService {
 
     private final BrinquedoRepository brinquedoRepository;
     private final CategoriaRepository categoriaRepository;
+    private final ImagemRepository imagemRepository;
     private final CloudinaryService cloudinaryService;
 
-    public BrinquedoService (BrinquedoRepository brinquedoRepository, CategoriaRepository categoriaRepository, CloudinaryService cloudinaryService) {
+    public BrinquedoService (BrinquedoRepository brinquedoRepository, CategoriaRepository categoriaRepository, ImagemRepository imagemRepository, CloudinaryService cloudinaryService) {
         this.brinquedoRepository = brinquedoRepository;
         this.categoriaRepository = categoriaRepository;
+        this.imagemRepository = imagemRepository;
         this.cloudinaryService = cloudinaryService;
     }
 
@@ -99,6 +103,7 @@ public class BrinquedoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public Brinquedo criarBrinquedo(String codigo, String nome, BigDecimal valor, String marca,
                                     String descricao, String detalhes, List<Long> categoriaIds,
                                     List<MultipartFile> arquivos) throws Exception {
@@ -137,6 +142,75 @@ public class BrinquedoService {
         }
 
         brinquedo.setImagens(imagens);
+
+        return brinquedoRepository.save(brinquedo);
+    }
+
+    @Transactional
+    public Brinquedo atualizarBrinquedo(Long id,
+                                        String codigo,
+                                        String nome,
+                                        BigDecimal valor,
+                                        String marca,
+                                        String descricao,
+                                        String detalhes,
+                                        List<Long> categoriaIds,
+                                        List<MultipartFile> novasImagens,
+                                        List<Long> imagensRemover) throws Exception {
+
+        Brinquedo brinquedo = brinquedoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
+
+        // Atualiza campos básicos
+        brinquedo.setCodigo(codigo);
+        brinquedo.setNome(nome);
+        brinquedo.setValor(valor);
+        brinquedo.setMarca(marca);
+        brinquedo.setDescricao(descricao);
+        brinquedo.setDetalhes(detalhes);
+
+        // Atualiza categorias
+        Set<Categoria> categorias = new HashSet<>();
+        for (Long catId : categoriaIds) {
+            categoriaRepository.findById(catId).ifPresent(categorias::add);
+        }
+        brinquedo.setCategorias(categorias);
+
+        // Remove imagens
+        if (imagensRemover != null && !imagensRemover.isEmpty()) {
+            Iterator<Imagem> iterator = brinquedo.getImagens().iterator();
+            while (iterator.hasNext()) {
+                Imagem img = iterator.next();
+                if (imagensRemover.contains(img.getId())) {
+                    if (img.getPublicId() != null) {
+                        try {
+                            cloudinaryService.deleteFile(img.getPublicId());
+                        } catch (Exception e) {
+                            System.err.println("Erro ao deletar do Cloudinary: " + e.getMessage());
+                        }
+                    }
+                    iterator.remove();
+                    imagemRepository.delete(img);
+                }
+            }
+        }
+
+        // Adiciona novas imagens
+        if (novasImagens != null && !novasImagens.isEmpty()) {
+            for (MultipartFile arquivo : novasImagens) {
+                if (!arquivo.isEmpty()) {
+                    Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+                    String imageUrl = (String) uploadResult.get("secure_url");
+                    String publicId = (String) uploadResult.get("public_id");
+
+                    Imagem imagem = new Imagem();
+                    imagem.setCaminho(imageUrl);
+                    imagem.setPublicId(publicId);
+                    imagem.setBrinquedo(brinquedo);
+                    brinquedo.getImagens().add(imagem);
+                }
+            }
+        }
 
         return brinquedoRepository.save(brinquedo);
     }
