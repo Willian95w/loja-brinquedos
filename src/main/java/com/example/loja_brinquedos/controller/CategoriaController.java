@@ -26,5 +26,4 @@ public class CategoriaController {
     public List<Categoria> searchCategorias(@RequestParam String nome) {
         return categoriaService.findByNome(nome);
     }
-
 }
