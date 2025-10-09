@@ -14,7 +14,7 @@ import java.util.Set;
 @Repository
 public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
 
-    List<Brinquedo> findTop8ByOrderByViewsDesc();
+    List<Brinquedo> findTop12ByOrderByViewsDesc();
 
     List<Brinquedo> findByCategorias_Id(Long id);
 

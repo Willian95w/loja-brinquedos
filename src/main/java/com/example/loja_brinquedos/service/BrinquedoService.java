@@ -37,8 +37,8 @@ public class BrinquedoService {
         return brinquedoRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
     }
 
-    public List<Brinquedo> findTop8MaisAcessados() {
-        return brinquedoRepository.findTop8ByOrderByViewsDesc();
+    public List<Brinquedo> findTop12MaisAcessados() {
+        return brinquedoRepository.findTop12ByOrderByViewsDesc();
     }
 
     public List<Brinquedo> findByCategoriaId(Long idCategoria) {

@@ -39,7 +39,7 @@ public class BrinquedoController {
 
     @GetMapping("/mais-acessados")
     public List<Brinquedo> getMaisAcessados() {
-        return brinquedoService.findTop8MaisAcessados();
+        return brinquedoService.findTop12MaisAcessados();
     }
 
     @GetMapping("/categoria/{id}")
