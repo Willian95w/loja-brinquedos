@@ -1,7 +1,6 @@
 package com.example.loja_brinquedos.controller;
 
 import com.example.loja_brinquedos.model.Brinquedo;
-import com.example.loja_brinquedos.model.Categoria;
 import com.example.loja_brinquedos.model.Imagem;
 import com.example.loja_brinquedos.repository.CategoriaRepository;
 import com.example.loja_brinquedos.repository.ImagemRepository;
@@ -81,22 +80,38 @@ public class BrinquedoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Brinquedo> updateBrinquedo(
+    public ResponseEntity<Brinquedo> atualizarBrinquedo(
             @PathVariable Long id,
-            @RequestParam String codigo,
+            @RequestParam(required = false) String codigo,
             @RequestParam String nome,
             @RequestParam BigDecimal valor,
             @RequestParam String marca,
             @RequestParam String descricao,
             @RequestParam String detalhes,
-            @RequestParam List<Long> categoriaIds,
-            @RequestParam(value = "novasImagens", required = false) List<MultipartFile> novasImagens
+            @RequestParam List<Long> categoriaIds
+    ) {
+        Brinquedo atualizado = brinquedoService.atualizarBrinquedo(
+                id, codigo, nome, valor, marca, descricao, detalhes, categoriaIds
+        );
+        return ResponseEntity.ok(atualizado);
+    }
+
+    @PostMapping("/{id}/imagens")
+    public ResponseEntity<List<Imagem>> adicionarImagens(
+            @PathVariable Long id,
+            @RequestParam("arquivos") List<MultipartFile> arquivos
     ) throws Exception {
+        List<Imagem> novasImagens = brinquedoService.adicionarImagens(id, arquivos);
+        return ResponseEntity.ok(novasImagens);
+    }
 
-        Brinquedo salvo = brinquedoService.atualizarBrinquedo(
-                id, codigo, nome, valor, marca, descricao, detalhes, categoriaIds, novasImagens);
-
-        return ResponseEntity.ok(salvo);
+    @DeleteMapping("/{id}/imagens/{imagemId}")
+    public ResponseEntity<Void> removerImagem(
+            @PathVariable Long id,
+            @PathVariable Long imagemId
+    ) throws Exception {
+        brinquedoService.removerImagem(id, imagemId);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

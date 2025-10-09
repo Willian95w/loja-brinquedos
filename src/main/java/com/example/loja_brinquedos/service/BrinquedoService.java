@@ -160,14 +160,10 @@ public class BrinquedoService {
                                         String marca,
                                         String descricao,
                                         String detalhes,
-                                        List<Long> categoriaIds,
-                                        List<MultipartFile> novasImagens,
-                                        List<Long> imagensExistentesIds) throws Exception {
-        // Busca o brinquedo existente
+                                        List<Long> categoriaIds) {
         Brinquedo brinquedo = brinquedoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
 
-        // Atualiza campos básicos
         if (codigo != null && !codigo.isBlank()) {
             brinquedo.setCodigo(codigo);
         }
@@ -184,50 +180,52 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Atualiza imagens
-        List<Imagem> imagensAtualizadas = new ArrayList<>();
-
-        // Mantém imagens antigas selecionadas pelo usuário
-        if (imagensExistentesIds != null && !imagensExistentesIds.isEmpty()) {
-            List<Imagem> imagensExistentes = imagemRepository.findAllById(imagensExistentesIds);
-            imagensAtualizadas.addAll(imagensExistentes);
-        }
-
-        // Remove imagens que não foram selecionadas
-        List<Imagem> imagensParaRemover = brinquedo.getImagens().stream()
-                .filter(img -> imagensExistentesIds == null || !imagensExistentesIds.contains(img.getId()))
-                .collect(Collectors.toList());
-
-        for (Imagem img : imagensParaRemover) {
-            // Remove do Cloudinary
-            cloudinaryService.deleteFile(img.getPublicId());
-            // Remove do banco
-            imagemRepository.delete(img);
-        }
-
-        // Adiciona novas imagens
-        if (novasImagens != null) {
-            for (MultipartFile arquivo : novasImagens) {
-                if (!arquivo.isEmpty()) {
-                    Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
-                    String imageUrl = (String) uploadResult.get("secure_url");
-                    String publicId = (String) uploadResult.get("public_id");
-
-                    Imagem imagem = new Imagem();
-                    imagem.setCaminho(imageUrl);
-                    imagem.setPublicId(publicId);
-                    imagem.setBrinquedo(brinquedo);
-
-                    imagensAtualizadas.add(imagem);
-                }
-            }
-        }
-
-        brinquedo.setImagens(imagensAtualizadas);
-
         return brinquedoRepository.save(brinquedo);
     }
 
+    @Transactional
+    public List<Imagem> adicionarImagens(Long brinquedoId, List<MultipartFile> arquivos) throws Exception {
+        Brinquedo brinquedo = brinquedoRepository.findById(brinquedoId)
+                .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
+
+        List<Imagem> novasImagens = new ArrayList<>();
+
+        for (MultipartFile arquivo : arquivos) {
+            if (!arquivo.isEmpty()) {
+                Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+                String imageUrl = (String) uploadResult.get("secure_url");
+                String publicId = (String) uploadResult.get("public_id");
+
+                Imagem imagem = new Imagem();
+                imagem.setCaminho(imageUrl);
+                imagem.setPublicId(publicId);
+                imagem.setBrinquedo(brinquedo);
+
+                novasImagens.add(imagem);
+            }
+        }
+
+        brinquedo.getImagens().addAll(novasImagens);
+        brinquedoRepository.save(brinquedo);
+
+        return novasImagens;
+    }
+
+    @Transactional
+    public void removerImagem(Long brinquedoId, Long imagemId) throws Exception {
+        Imagem imagem = imagemRepository.findById(imagemId)
+                .orElseThrow(() -> new RuntimeException("Imagem não encontrada"));
+
+        if (!imagem.getBrinquedo().getId().equals(brinquedoId)) {
+            throw new RuntimeException("Imagem não pertence a este brinquedo");
+        }
+
+        // Remove do Cloudinary
+        cloudinaryService.deleteFile(imagem.getPublicId());
+
+        // Remove do banco
+        imagemRepository.delete(imagem);
+    }
 
     private String gerarCodigoUnico() {
         String prefixo = "BRQ";
