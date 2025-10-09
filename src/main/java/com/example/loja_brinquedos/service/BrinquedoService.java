@@ -210,7 +210,7 @@ public class BrinquedoService {
             }
         }
 
-        return brinquedoRepository.save(brinquedo);
+        return brinquedo;
     }
 
     public Brinquedo save(Brinquedo brinquedo) {
