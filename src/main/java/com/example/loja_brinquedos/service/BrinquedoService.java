@@ -1,12 +1,14 @@
 package com.example.loja_brinquedos.service;
 
 import com.example.loja_brinquedos.model.Brinquedo;
+import com.example.loja_brinquedos.model.Categoria;
 import com.example.loja_brinquedos.repository.BrinquedoRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.*;
+
 
 @Service
 public class BrinquedoService {
@@ -43,19 +45,49 @@ public class BrinquedoService {
         return brinquedoRepository.filtrarPorCategoria(categoriaId, nome, marcas, minValor, maxValor);
     }
 
+    public Map<String, Object> getBrinquedoComRelacionados(Long id) {
+        // Busca o brinquedo principal
+        Brinquedo brinquedo = brinquedoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
+
+        // Incrementa visualizações
+        brinquedo.setViews(brinquedo.getViews() + 1);
+        brinquedoRepository.save(brinquedo);
+
+        // Busca os brinquedos relacionados (mesma(s) categoria(s), exceto o atual)
+        Set<Categoria> categorias = brinquedo.getCategorias();
+        List<Brinquedo> relacionados = brinquedoRepository.findRelacionadosByCategorias(categorias, id);
+
+        // Simplifica os relacionados — só imagem principal, nome e valor
+        List<Map<String, Object>> relacionadosSimplificados = relacionados.stream().map(b -> {
+            Map<String, Object> mapa = new HashMap<>();
+            mapa.put("id", b.getId());
+            mapa.put("nome", b.getNome());
+            mapa.put("valor", b.getValor());
+
+            // Pega a primeira imagem, se existir
+            String imagemPrincipal = (b.getImagens() != null && !b.getImagens().isEmpty())
+                    ? b.getImagens().get(0).getCaminho()
+                    : null;
+            mapa.put("imagem", imagemPrincipal);
+
+            return mapa;
+        }).collect(Collectors.toList());
+
+        // Monta o retorno
+        Map<String, Object> resposta = new HashMap<>();
+        resposta.put("brinquedo", brinquedo);
+        resposta.put("relacionados", relacionadosSimplificados);
+
+        return resposta;
+    }
+
     public Brinquedo save(Brinquedo brinquedo) {
         return brinquedoRepository.save(brinquedo);
     }
 
     public void delete(Long id) {
         brinquedoRepository.deleteById(id);
-    }
-
-    public void incrementViews(Long id) {
-        brinquedoRepository.findById(id).ifPresent(brinquedo -> {
-            brinquedo.setViews(brinquedo.getViews() + 1);
-            brinquedoRepository.save(brinquedo);
-        });
     }
 
 }

@@ -1,6 +1,7 @@
 package com.example.loja_brinquedos.repository;
 
 import com.example.loja_brinquedos.model.Brinquedo;
+import com.example.loja_brinquedos.model.Categoria;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
@@ -15,6 +17,8 @@ public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
     List<Brinquedo> findTop8ByOrderByViewsDesc();
 
     List<Brinquedo> findByCategorias_Id(Long id);
+
+    List<Brinquedo> findDistinctByCategorias_IdInAndIdNot(Set<Long> categoriaIds, Long excludeId);
 
     @Query("""
         SELECT b 
@@ -33,5 +37,10 @@ public interface BrinquedoRepository extends JpaRepository<Brinquedo,Long> {
             @Param("minValor") BigDecimal minValor,
             @Param("maxValor") BigDecimal maxValor
     );
+
+    @Query("SELECT DISTINCT b FROM Brinquedo b JOIN b.categorias c WHERE c IN :categorias AND b.id <> :brinquedoId")
+    List<Brinquedo> findRelacionadosByCategorias(@Param("categorias") Set<Categoria> categorias,
+                                                 @Param("brinquedoId") Long brinquedoId);
+
 
 }

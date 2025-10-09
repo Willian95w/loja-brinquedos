@@ -55,11 +55,11 @@ public class BrinquedoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Brinquedo> getBrinquedoById(@PathVariable Long id) {
-        return brinquedoService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<Map<String, Object>> getBrinquedoById(@PathVariable Long id) {
+        Map<String, Object> resultado = brinquedoService.getBrinquedoComRelacionados(id);
+        return ResponseEntity.ok(resultado);
     }
+
 
     @PostMapping
     public ResponseEntity<Brinquedo> createBrinquedo(
@@ -195,12 +195,6 @@ public class BrinquedoController {
     public ResponseEntity<Void> deleteBrinquedo(@PathVariable Long id) {
         brinquedoService.delete(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{id}/incrementViews")
-    public ResponseEntity<Void> incrementViews(@PathVariable Long id) {
-        brinquedoService.incrementViews(id);
-        return ResponseEntity.ok().build();
     }
 
 }
