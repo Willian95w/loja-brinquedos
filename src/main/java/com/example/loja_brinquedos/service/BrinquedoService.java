@@ -161,13 +161,16 @@ public class BrinquedoService {
                                         String descricao,
                                         String detalhes,
                                         List<Long> categoriaIds,
-                                        List<MultipartFile> novasImagens) throws Exception {
-
+                                        List<MultipartFile> novasImagens,
+                                        List<Long> imagensExistentesIds) throws Exception {
+        // Busca o brinquedo existente
         Brinquedo brinquedo = brinquedoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
 
         // Atualiza campos básicos
-        brinquedo.setCodigo(codigo);
+        if (codigo != null && !codigo.isBlank()) {
+            brinquedo.setCodigo(codigo);
+        }
         brinquedo.setNome(nome);
         brinquedo.setValor(valor);
         brinquedo.setMarca(marca);
@@ -181,43 +184,49 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Lista de imagens antigas
-        List<Imagem> imagensAntigas = new ArrayList<>(brinquedo.getImagens());
+        // Atualiza imagens
+        List<Imagem> imagensAtualizadas = new ArrayList<>();
 
-        // Remove imagens antigas do Cloudinary e do Hibernate
-        for (Imagem img : imagensAntigas) {
-            if (img.getPublicId() != null) {
-                try {
-                    cloudinaryService.deleteFile(img.getPublicId());
-                } catch (Exception e) {
-                    System.err.println("Erro ao deletar imagem antiga: " + e.getMessage());
-                }
-            }
-            brinquedo.getImagens().remove(img); // Remove do Hibernate
+        // Mantém imagens antigas selecionadas pelo usuário
+        if (imagensExistentesIds != null && !imagensExistentesIds.isEmpty()) {
+            List<Imagem> imagensExistentes = imagemRepository.findAllById(imagensExistentesIds);
+            imagensAtualizadas.addAll(imagensExistentes);
+        }
+
+        // Remove imagens que não foram selecionadas
+        List<Imagem> imagensParaRemover = brinquedo.getImagens().stream()
+                .filter(img -> imagensExistentesIds == null || !imagensExistentesIds.contains(img.getId()))
+                .collect(Collectors.toList());
+
+        for (Imagem img : imagensParaRemover) {
+            // Remove do Cloudinary
+            cloudinaryService.deleteFile(img.getPublicId());
+            // Remove do banco
+            imagemRepository.delete(img);
         }
 
         // Adiciona novas imagens
-        if (novasImagens != null && !novasImagens.isEmpty()) {
+        if (novasImagens != null) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
                     Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
                     String imageUrl = (String) uploadResult.get("secure_url");
                     String publicId = (String) uploadResult.get("public_id");
 
-                    Imagem novaImagem = new Imagem();
-                    novaImagem.setCaminho(imageUrl);
-                    novaImagem.setPublicId(publicId);
-                    novaImagem.setBrinquedo(brinquedo); // ESSENCIAL
+                    Imagem imagem = new Imagem();
+                    imagem.setCaminho(imageUrl);
+                    imagem.setPublicId(publicId);
+                    imagem.setBrinquedo(brinquedo);
 
-                    brinquedo.getImagens().add(novaImagem); // Hibernate detecta e faz insert
+                    imagensAtualizadas.add(imagem);
                 }
             }
         }
 
-        // Salva o brinquedo com as novas imagens
+        brinquedo.setImagens(imagensAtualizadas);
+
         return brinquedoRepository.save(brinquedo);
     }
-
 
 
     private String gerarCodigoUnico() {
