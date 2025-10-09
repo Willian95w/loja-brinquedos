@@ -105,14 +105,12 @@ public class BrinquedoController {
         return ResponseEntity.ok(novasImagens);
     }
 
-    @DeleteMapping("/{id}/imagens/{imagemId}")
-    public ResponseEntity<Void> removerImagem(
-            @PathVariable Long id,
-            @PathVariable Long imagemId
-    ) throws Exception {
-        brinquedoService.removerImagem(id, imagemId);
+    @DeleteMapping("/{id}/imagens")
+    public ResponseEntity<Void> removerTodasImagens(@PathVariable Long id) throws Exception {
+        brinquedoService.removerTodasImagens(id);
         return ResponseEntity.noContent().build();
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBrinquedo(@PathVariable Long id) {

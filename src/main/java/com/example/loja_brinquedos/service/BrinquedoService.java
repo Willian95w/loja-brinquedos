@@ -212,20 +212,31 @@ public class BrinquedoService {
     }
 
     @Transactional
-    public void removerImagem(Long brinquedoId, Long imagemId) throws Exception {
-        Imagem imagem = imagemRepository.findById(imagemId)
-                .orElseThrow(() -> new RuntimeException("Imagem não encontrada"));
+    public void removerTodasImagens(Long brinquedoId) throws Exception {
+        Brinquedo brinquedo = brinquedoRepository.findById(brinquedoId)
+                .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
 
-        if (!imagem.getBrinquedo().getId().equals(brinquedoId)) {
-            throw new RuntimeException("Imagem não pertence a este brinquedo");
+        List<Imagem> imagens = brinquedo.getImagens();
+
+        if (imagens == null || imagens.isEmpty()) {
+            return; // nada pra deletar
         }
 
         // Remove do Cloudinary
-        cloudinaryService.deleteFile(imagem.getPublicId());
+        for (Imagem imagem : imagens) {
+            if (imagem.getPublicId() != null) {
+                cloudinaryService.deleteFile(imagem.getPublicId());
+            }
+        }
 
         // Remove do banco
-        imagemRepository.delete(imagem);
+        imagemRepository.deleteAll(imagens);
+
+        // Limpa a lista na entidade (boa prática JPA)
+        brinquedo.getImagens().clear();
+        brinquedoRepository.save(brinquedo);
     }
+
 
     private String gerarCodigoUnico() {
         String prefixo = "BRQ";
