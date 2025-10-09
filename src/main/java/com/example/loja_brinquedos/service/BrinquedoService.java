@@ -50,7 +50,6 @@ public class BrinquedoService {
 
     public List<Brinquedo> filtrarPorCategoria(Long categoriaId, String nome, List<String> marcas,
                                                BigDecimal minValor, BigDecimal maxValor) {
-        // se a lista de marcas estiver vazia, passamos null
         if (marcas != null && marcas.isEmpty()) {
             marcas = null;
         }
@@ -59,26 +58,21 @@ public class BrinquedoService {
     }
 
     public Map<String, Object> getBrinquedoComRelacionados(Long id) {
-        // Busca o brinquedo principal
         Brinquedo brinquedo = brinquedoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
 
-        // Incrementa visualizações
         brinquedo.setViews(brinquedo.getViews() + 1);
         brinquedoRepository.save(brinquedo);
 
-        // Busca os brinquedos relacionados (mesma(s) categoria(s), exceto o atual)
         Set<Categoria> categorias = brinquedo.getCategorias();
         List<Brinquedo> relacionados = brinquedoRepository.findRelacionadosByCategorias(categorias, id);
 
-        // Simplifica os relacionados — só imagem principal, nome e valor
         List<Map<String, Object>> relacionadosSimplificados = relacionados.stream().map(b -> {
             Map<String, Object> mapa = new HashMap<>();
             mapa.put("id", b.getId());
             mapa.put("nome", b.getNome());
             mapa.put("valor", b.getValor());
 
-            // Pega a primeira imagem, se existir
             String imagemPrincipal = (b.getImagens() != null && !b.getImagens().isEmpty())
                     ? b.getImagens().get(0).getCaminho()
                     : null;
@@ -87,7 +81,6 @@ public class BrinquedoService {
             return mapa;
         }).collect(Collectors.toList());
 
-        // Monta o retorno
         Map<String, Object> resposta = new LinkedHashMap<>();
         resposta.put("brinquedo", brinquedo);
         resposta.put("relacionados", relacionadosSimplificados);
@@ -114,7 +107,6 @@ public class BrinquedoService {
             codigo = gerarCodigoUnico();
         }
 
-        // Cria o brinquedo
         Brinquedo brinquedo = new Brinquedo();
         brinquedo.setCodigo(codigo);
         brinquedo.setNome(nome);
@@ -123,14 +115,12 @@ public class BrinquedoService {
         brinquedo.setDescricao(descricao);
         brinquedo.setDetalhes(detalhes);
 
-        // Associa categorias
         Set<Categoria> categorias = new HashSet<>();
         for (Long id : categoriaIds) {
             categoriaRepository.findById(id).ifPresent(categorias::add);
         }
         brinquedo.setCategorias(categorias);
 
-        // Faz upload das imagens
         List<Imagem> imagens = new ArrayList<>();
         for (MultipartFile arquivo : arquivos) {
             if (!arquivo.isEmpty()) {
@@ -173,7 +163,6 @@ public class BrinquedoService {
         brinquedo.setDescricao(descricao);
         brinquedo.setDetalhes(detalhes);
 
-        // Atualiza categorias
         Set<Categoria> categorias = new HashSet<>();
         for (Long catId : categoriaIds) {
             categoriaRepository.findById(catId).ifPresent(categorias::add);
@@ -219,17 +208,15 @@ public class BrinquedoService {
         List<Imagem> imagens = brinquedo.getImagens();
 
         if (imagens == null || imagens.isEmpty()) {
-            return; // nada pra deletar
+            return;
         }
 
-        // Remove do Cloudinary
         for (Imagem imagem : imagens) {
             if (imagem.getPublicId() != null) {
                 cloudinaryService.deleteFile(imagem.getPublicId());
             }
         }
 
-        // Limpa a lista na entidade (boa prática JPA)
         brinquedo.getImagens().clear();
         brinquedoRepository.save(brinquedo);
     }
@@ -238,7 +225,7 @@ public class BrinquedoService {
     private String gerarCodigoUnico() {
         String prefixo = "BRQ";
         String data = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        long count = brinquedoRepository.count() + 1; // baseia no número de registros
+        long count = brinquedoRepository.count() + 1;
         return String.format("%s-%s-%03d", prefixo, data, count);
     }
 
