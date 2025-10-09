@@ -229,9 +229,6 @@ public class BrinquedoService {
             }
         }
 
-        // Remove do banco
-        imagemRepository.deleteAll(imagens);
-
         // Limpa a lista na entidade (boa prática JPA)
         brinquedo.getImagens().clear();
         brinquedoRepository.save(brinquedo);
