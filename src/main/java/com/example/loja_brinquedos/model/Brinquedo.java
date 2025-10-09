@@ -43,6 +43,7 @@ public class Brinquedo {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String detalhes;
 
+    @NotEmpty(message = "O brinquedo deve ter pelo menos uma categoria")
     @ManyToMany
     @JoinTable(
             name = "produto_categoria",
@@ -52,7 +53,6 @@ public class Brinquedo {
     @JsonManagedReference
     private Set<Categoria> categorias = new HashSet<>();
 
-    @NotEmpty
     @OneToMany(mappedBy = "brinquedo", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Imagem> imagens = new ArrayList<>();
