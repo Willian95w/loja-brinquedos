@@ -166,7 +166,6 @@ public class BrinquedoService {
         Brinquedo brinquedo = brinquedoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
 
-        // Atualiza campos básicos
         brinquedo.setCodigo(codigo);
         brinquedo.setNome(nome);
         brinquedo.setValor(valor);
@@ -174,26 +173,11 @@ public class BrinquedoService {
         brinquedo.setDescricao(descricao);
         brinquedo.setDetalhes(detalhes);
 
-        // Atualiza categorias
         Set<Categoria> categorias = new HashSet<>();
         for (Long catId : categoriaIds) {
             categoriaRepository.findById(catId).ifPresent(categorias::add);
         }
         brinquedo.setCategorias(categorias);
-
-        // Remove imagens antigas do Cloudinary
-        for (Imagem img : brinquedo.getImagens()) {
-            if (img.getPublicId() != null) {
-                try {
-                    cloudinaryService.deleteFile(img.getPublicId());
-                } catch (Exception e) {
-                    System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
-                }
-            }
-        }
-
-        // Limpa a coleção para que o Hibernate remova as antigas no banco
-        brinquedo.getImagens().clear();
 
         // Adiciona novas imagens
         if (novasImagens != null) {
@@ -212,9 +196,21 @@ public class BrinquedoService {
             }
         }
 
+        // Remove imagens antigas do Cloudinary e do banco
+        List<Imagem> imagensParaRemover = new ArrayList<>(brinquedo.getImagens());
+        for (Imagem img : imagensParaRemover) {
+            if (img.getPublicId() != null) {
+                try {
+                    cloudinaryService.deleteFile(img.getPublicId());
+                    brinquedo.getImagens().remove(img);
+                } catch (Exception e) {
+                    System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
+                }
+            }
+        }
+
         return brinquedoRepository.save(brinquedo);
     }
-
 
     private String gerarCodigoUnico() {
         String prefixo = "BRQ";
