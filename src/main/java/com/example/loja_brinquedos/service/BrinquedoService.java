@@ -2,8 +2,11 @@ package com.example.loja_brinquedos.service;
 
 import com.example.loja_brinquedos.model.Brinquedo;
 import com.example.loja_brinquedos.model.Categoria;
+import com.example.loja_brinquedos.model.Imagem;
 import com.example.loja_brinquedos.repository.BrinquedoRepository;
+import com.example.loja_brinquedos.repository.CategoriaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
@@ -14,9 +17,13 @@ import java.util.*;
 public class BrinquedoService {
 
     private final BrinquedoRepository brinquedoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final CloudinaryService cloudinaryService;
 
-    public BrinquedoService(BrinquedoRepository brinquedoRepository) {
+    public BrinquedoService (BrinquedoRepository brinquedoRepository, CategoriaRepository categoriaRepository, CloudinaryService cloudinaryService) {
         this.brinquedoRepository = brinquedoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public List<Brinquedo> findAll() {
@@ -90,6 +97,48 @@ public class BrinquedoService {
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.toList());
+    }
+
+    public Brinquedo criarBrinquedo(String codigo, String nome, BigDecimal valor, String marca,
+                                    String descricao, String detalhes, List<Long> categoriaIds,
+                                    List<MultipartFile> arquivos) throws Exception {
+
+        // Cria o brinquedo
+        Brinquedo brinquedo = new Brinquedo();
+        brinquedo.setCodigo(codigo);
+        brinquedo.setNome(nome);
+        brinquedo.setValor(valor);
+        brinquedo.setMarca(marca);
+        brinquedo.setDescricao(descricao);
+        brinquedo.setDetalhes(detalhes);
+
+        // Associa categorias
+        Set<Categoria> categorias = new HashSet<>();
+        for (Long id : categoriaIds) {
+            categoriaRepository.findById(id).ifPresent(categorias::add);
+        }
+        brinquedo.setCategorias(categorias);
+
+        // Faz upload das imagens
+        List<Imagem> imagens = new ArrayList<>();
+        for (MultipartFile arquivo : arquivos) {
+            if (!arquivo.isEmpty()) {
+                Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+                String imageUrl = (String) uploadResult.get("secure_url");
+                String publicId = (String) uploadResult.get("public_id");
+
+                Imagem imagem = new Imagem();
+                imagem.setCaminho(imageUrl);
+                imagem.setPublicId(publicId);
+                imagem.setBrinquedo(brinquedo);
+
+                imagens.add(imagem);
+            }
+        }
+
+        brinquedo.setImagens(imagens);
+
+        return brinquedoRepository.save(brinquedo);
     }
 
     public Brinquedo save(Brinquedo brinquedo) {

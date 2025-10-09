@@ -76,42 +76,7 @@ public class BrinquedoController {
             @RequestParam List<Long> categoriaIds,
             @RequestParam("imagens") List<MultipartFile> arquivos) throws Exception {
 
-        // Cria o brinquedo
-        Brinquedo brinquedo = new Brinquedo();
-        brinquedo.setCodigo(codigo);
-        brinquedo.setNome(nome);
-        brinquedo.setValor(valor);
-        brinquedo.setMarca(marca);
-        brinquedo.setDescricao(descricao);
-        brinquedo.setDetalhes(detalhes);
-
-        // Associa categorias
-        Set<Categoria> categorias = new HashSet<>();
-        for (Long id : categoriaIds) {
-            categoriaRepository.findById(id).ifPresent(categorias::add);
-        }
-        brinquedo.setCategorias(categorias);
-
-        // Faz upload das imagens para o Cloudinary
-        List<Imagem> imagens = new ArrayList<>();
-        for (MultipartFile arquivo : arquivos) {
-            if (!arquivo.isEmpty()) {
-                Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
-                String imageUrl = (String) uploadResult.get("secure_url");
-                String publicId = (String) uploadResult.get("public_id");
-
-                Imagem imagem = new Imagem();
-                imagem.setCaminho(imageUrl);
-                imagem.setPublicId(publicId);
-                imagem.setBrinquedo(brinquedo);
-
-                imagens.add(imagem);
-            }
-        }
-
-        brinquedo.setImagens(imagens);
-
-        Brinquedo salvo = brinquedoService.save(brinquedo);
+        Brinquedo salvo = brinquedoService.criarBrinquedo(codigo, nome, valor, marca, descricao, detalhes, categoriaIds, arquivos);
         return ResponseEntity.ok(salvo);
     }
 
