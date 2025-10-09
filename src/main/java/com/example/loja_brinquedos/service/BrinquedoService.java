@@ -181,14 +181,21 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Remove todas as imagens antigas
-        for (Imagem img : new ArrayList<>(brinquedo.getImagens())) {
-            cloudinaryService.deleteFile(img.getPublicId());
-            brinquedo.getImagens().remove(img);
+        // Remove imagens antigas do Cloudinary e do banco
+        List<Imagem> imagensAntigas = new ArrayList<>(brinquedo.getImagens());
+        for (Imagem img : imagensAntigas) {
+            if (img.getPublicId() != null) {
+                try {
+                    cloudinaryService.deleteFile(img.getPublicId());
+                } catch (Exception e) {
+                    System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
+                }
+            }
             imagemRepository.delete(img);
         }
+        brinquedo.getImagens().clear();
 
-        // Adiciona novas imagens (se houver)
+        // Adiciona novas imagens
         if (novasImagens != null && !novasImagens.isEmpty()) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
@@ -208,22 +215,6 @@ public class BrinquedoService {
         return brinquedoRepository.save(brinquedo);
     }
 
-    @Transactional
-    public void removerTodasImagens(Brinquedo brinquedo) {
-        List<Imagem> imagens = new ArrayList<>(brinquedo.getImagens());
-
-        for (Imagem img : imagens) {
-            if (img.getPublicId() != null) {
-                try {
-                    cloudinaryService.deleteFile(img.getPublicId());
-                } catch (Exception e) {
-                    System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
-                }
-            }
-        }
-
-        brinquedo.getImagens().clear();
-    }
 
     private String gerarCodigoUnico() {
         String prefixo = "BRQ";
