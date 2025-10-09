@@ -178,9 +178,7 @@ public class BrinquedoService {
 
         // Remove imagens
         if (imagensRemover != null && !imagensRemover.isEmpty()) {
-            Iterator<Imagem> iterator = brinquedo.getImagens().iterator();
-            while (iterator.hasNext()) {
-                Imagem img = iterator.next();
+            brinquedo.getImagens().removeIf(img -> {
                 if (imagensRemover.contains(img.getId())) {
                     if (img.getPublicId() != null) {
                         try {
@@ -189,10 +187,10 @@ public class BrinquedoService {
                             System.err.println("Erro ao deletar do Cloudinary: " + e.getMessage());
                         }
                     }
-                    iterator.remove();
-                    imagemRepository.delete(img);
+                    return true; // remove da coleção
                 }
-            }
+                return false;
+            });
         }
 
         // Adiciona novas imagens
