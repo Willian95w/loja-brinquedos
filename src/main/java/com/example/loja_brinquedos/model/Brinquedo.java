@@ -43,7 +43,6 @@ public class Brinquedo {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String detalhes;
 
-    @NotEmpty(message = "O brinquedo deve ter pelo menos uma categoria")
     @ManyToMany
     @JoinTable(
             name = "produto_categoria",
