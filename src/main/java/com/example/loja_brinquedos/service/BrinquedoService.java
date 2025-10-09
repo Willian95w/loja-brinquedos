@@ -181,43 +181,40 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Lista temporária para armazenar imagens antigas para deleção
+        // Lista temporária para armazenar imagens antigas
         List<Imagem> imagensAntigas = new ArrayList<>(brinquedo.getImagens());
 
-        // Adiciona novas imagens antes de remover as antigas
-        if (novasImagens != null) {
+        // Primeiro adiciona novas imagens
+        if (novasImagens != null && !novasImagens.isEmpty()) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
-                    try {
-                        Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
-                        String imageUrl = (String) uploadResult.get("secure_url");
-                        String publicId = (String) uploadResult.get("public_id");
+                    Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+                    String imageUrl = (String) uploadResult.get("secure_url");
+                    String publicId = (String) uploadResult.get("public_id");
 
-                        Imagem novaImagem = new Imagem();
-                        novaImagem.setCaminho(imageUrl);
-                        novaImagem.setPublicId(publicId);
-                        novaImagem.setBrinquedo(brinquedo);
+                    Imagem novaImagem = new Imagem();
+                    novaImagem.setCaminho(imageUrl);
+                    novaImagem.setPublicId(publicId);
+                    novaImagem.setBrinquedo(brinquedo); // ESSENCIAL
 
-                        brinquedo.getImagens().add(novaImagem);
-                    } catch (Exception e) {
-                        System.err.println("Erro ao fazer upload da imagem: " + e.getMessage());
-                        // Decide se quer lançar exceção ou apenas ignorar a imagem com falha
-                        throw new RuntimeException("Falha ao adicionar novas imagens");
-                    }
+                    // Adiciona à coleção do brinquedo
+                    brinquedo.getImagens().add(novaImagem);
                 }
             }
         }
 
-        // Remove imagens antigas do Cloudinary e da coleção
+        // Depois remove as antigas (para não perder as novas se der erro)
         for (Imagem img : imagensAntigas) {
-            if (img.getPublicId() != null) {
-                try {
-                    cloudinaryService.deleteFile(img.getPublicId());
-                } catch (Exception e) {
-                    System.err.println("Erro ao deletar imagem antiga do Cloudinary: " + e.getMessage());
+            if (!brinquedo.getImagens().contains(img)) { // Só remove as antigas
+                if (img.getPublicId() != null) {
+                    try {
+                        cloudinaryService.deleteFile(img.getPublicId());
+                    } catch (Exception e) {
+                        System.err.println("Erro ao deletar imagem antiga do Cloudinary: " + e.getMessage());
+                    }
                 }
+                brinquedo.getImagens().remove(img); // Remove do Hibernate
             }
-            brinquedo.getImagens().remove(img); // Remove do Hibernate
         }
 
         // Persiste o brinquedo com novas imagens
