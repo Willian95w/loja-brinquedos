@@ -166,6 +166,7 @@ public class BrinquedoService {
         Brinquedo brinquedo = brinquedoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brinquedo não encontrado"));
 
+        // Atualiza campos básicos
         brinquedo.setCodigo(codigo);
         brinquedo.setNome(nome);
         brinquedo.setValor(valor);
@@ -173,44 +174,56 @@ public class BrinquedoService {
         brinquedo.setDescricao(descricao);
         brinquedo.setDetalhes(detalhes);
 
+        // Atualiza categorias
         Set<Categoria> categorias = new HashSet<>();
         for (Long catId : categoriaIds) {
             categoriaRepository.findById(catId).ifPresent(categorias::add);
         }
         brinquedo.setCategorias(categorias);
 
-        // Adiciona novas imagens
+        // Lista temporária para armazenar imagens antigas para deleção
+        List<Imagem> imagensAntigas = new ArrayList<>(brinquedo.getImagens());
+
+        // Adiciona novas imagens antes de remover as antigas
         if (novasImagens != null) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
-                    Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
-                    String imageUrl = (String) uploadResult.get("secure_url");
-                    String publicId = (String) uploadResult.get("public_id");
+                    try {
+                        Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
+                        String imageUrl = (String) uploadResult.get("secure_url");
+                        String publicId = (String) uploadResult.get("public_id");
 
-                    Imagem imagem = new Imagem();
-                    imagem.setCaminho(imageUrl);
-                    imagem.setPublicId(publicId);
-                    imagem.setBrinquedo(brinquedo);
-                    brinquedo.getImagens().add(imagem);
+                        Imagem novaImagem = new Imagem();
+                        novaImagem.setCaminho(imageUrl);
+                        novaImagem.setPublicId(publicId);
+                        novaImagem.setBrinquedo(brinquedo);
+
+                        brinquedo.getImagens().add(novaImagem);
+                    } catch (Exception e) {
+                        System.err.println("Erro ao fazer upload da imagem: " + e.getMessage());
+                        // Decide se quer lançar exceção ou apenas ignorar a imagem com falha
+                        throw new RuntimeException("Falha ao adicionar novas imagens");
+                    }
                 }
             }
         }
 
-        // Remove imagens antigas do Cloudinary e do banco
-        List<Imagem> imagensParaRemover = new ArrayList<>(brinquedo.getImagens());
-        for (Imagem img : imagensParaRemover) {
+        // Remove imagens antigas do Cloudinary e da coleção
+        for (Imagem img : imagensAntigas) {
             if (img.getPublicId() != null) {
                 try {
                     cloudinaryService.deleteFile(img.getPublicId());
-                    brinquedo.getImagens().remove(img);
                 } catch (Exception e) {
-                    System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
+                    System.err.println("Erro ao deletar imagem antiga do Cloudinary: " + e.getMessage());
                 }
             }
+            brinquedo.getImagens().remove(img); // Remove do Hibernate
         }
 
+        // Persiste o brinquedo com novas imagens
         return brinquedoRepository.save(brinquedo);
     }
+
 
     private String gerarCodigoUnico() {
         String prefixo = "BRQ";
