@@ -181,9 +181,8 @@ public class BrinquedoService {
         }
         brinquedo.setCategorias(categorias);
 
-        // Remove imagens antigas do Cloudinary e do banco
-        List<Imagem> imagensAntigas = new ArrayList<>(brinquedo.getImagens());
-        for (Imagem img : imagensAntigas) {
+        // Remove imagens antigas do Cloudinary
+        for (Imagem img : brinquedo.getImagens()) {
             if (img.getPublicId() != null) {
                 try {
                     cloudinaryService.deleteFile(img.getPublicId());
@@ -191,12 +190,13 @@ public class BrinquedoService {
                     System.err.println("Erro ao deletar imagem do Cloudinary: " + e.getMessage());
                 }
             }
-            imagemRepository.delete(img);
         }
+
+        // Limpa a coleção para que o Hibernate remova as antigas no banco
         brinquedo.getImagens().clear();
 
         // Adiciona novas imagens
-        if (novasImagens != null && !novasImagens.isEmpty()) {
+        if (novasImagens != null) {
             for (MultipartFile arquivo : novasImagens) {
                 if (!arquivo.isEmpty()) {
                     Map<String, Object> uploadResult = cloudinaryService.uploadFile(arquivo);
